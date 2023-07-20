@@ -117,18 +117,35 @@ df.long.nest.caseonly <- mutate(df.long.nest.caseonly, stan_model = map(data, ~s
   
  # Reference: Fit Bayesian Generalized (Non-)Linear Multivariate Multilevel Models using the Asymmetric Laplace Distribution
  # https://paul-buerkner.github.io/brms/reference/brm.html
+
   
- # Run separately for each region; Superior Tubular provided as example
-  
- # Left and Right Tubular Superior 
-  
- fit.lts <- brm(bf(supTub_L ~ illdur + sex + age + eTIV, quantile = 0.5), data = hypo_caseonly, family = asym_laplace())
- describe_posterior(fit.lti) %>% print_html()
- plot(conditional_effects(fit.lti))
-  
- fit.rts <- brm(bf(supTub_R ~ illdur + sex + age + eTIV, quantile = 0.5), data = hypo_caseonly, family = asym_laplace())
- describe_posterior(fit.rti) %>% print_html()
- plot(conditional_effects(fit.rti))  
+ # create illness as a factor variable   
+ hypo_caseonly$ill.factor <- as_factor(hypo_caseonly$illdur)
+ class(hypo_caseonly$ill.factor)
+
+ # For ordered factors, create illdurO or illness duration ordered 
+
+ hypo_caseonly <- mutate(hypo_caseonly, illdurO = ordered(illdur))
+
+
+ #  check class:
+ hypo_caseonly$illdurO
+ class(hypo_caseonly$illdurO)
+
+ hypo_caseonly <- hypo_caseonly %>%
+   mutate(age.scale = scale(age,center = TRUE, scale = TRUE),
+         aiHyp_L_scale = scale(aiHyp_L,center = TRUE, scale = TRUE),
+         aiHyp_R_scale = scale(aiHyp_R,center = TRUE, scale = TRUE)) # and so on ...
+
+ # run for each region, then run analysis:
+
+ fit.aiHyp_L <- brm(deg_aiHyp_L_scale ~ mo(illdurO) + sex + age.scale, iter= 10000, data = hypo_caseonly)
+ describe_posterior(fit.aiHyp_L) %>% print_html()
+ plot(conditional_effects(fit.aiHyp_L))
+
+ fit.aiHyp_R <- brm(deg_aiHyp_R_scale ~ mo(illdurO) + sex + age.scale, iter= 10000, data = hypo_caseonly)
+ describe_posterior(fit.aiHyp_R) %>% print_html()
+ plot(conditional_effects(fit.aiHyp_R)) 
   
   
  # ----- PLOTS -----
