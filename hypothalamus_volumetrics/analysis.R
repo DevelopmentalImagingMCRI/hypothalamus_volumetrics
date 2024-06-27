@@ -147,37 +147,3 @@ df.long.nest.caseonly <- mutate(df.long.nest.caseonly, stan_model = map(data, ~s
  describe_posterior(fit.aiHyp_R) %>% print_html()
  plot(conditional_effects(fit.aiHyp_R)) 
   
-  
- # ----- PLOTS -----
-  
-  
- # --- Fatigue Interactions ---
-  
- # Plot corrected fatigue interactions for both groups; example using asHyp_R as per paper
- # Replace "asHyp_R" for region/plot of interest
-  
- bf.asHyp_R <- stan_glm(asHyp_R ~ group*total_fatigue + sex + age + eTIV,  chains = 10, iter = 5000, warmup = 1000, data = hypo_vols) 
-  
- marginal_means <- estimate_means(bf.asHyp_R,at = c("group","total_fatigue")) 
-  
- marginal_means %>% ggplot(aes(x = total_fatigue, y= asHyp_R,colour = group)) +
-   geom_ribbon(data = marginal_restricted, aes(y = Mean, ymin = CI_low, ymax = CI_high, fill=group), alpha = 0.1, size=0) +
-   geom_line(data = marginal_restricted, aes(y = Mean, ymin = CI_low, ymax = CI_high), size = 1.5) +
-   xlab("Total Fatigue") +
-   ylab("Right Anterior-Superior Volume") +
-   theme_minimal() +
-   theme(text = element_text(size = 15))
-  
-  
- # --- Illness Duration ---
-  
- # Plot relationship between variables; replace "supTub_R" with ROI 
-  
- hypo_caseonly %>% ggplot(aes(x=illdur, y= supTub_R)) +
-   geom_point(aes(colour=sex), size = 2) +
-   geom_smooth(method ="lm", colour="#666666") +
-   ylab("Right Superior Tubular Volume") +
-   xlab("Illness Duration") +
-   theme_minimal() +
-   theme(text = element_text(size = 15)) +
-   theme(legend.position="none")
